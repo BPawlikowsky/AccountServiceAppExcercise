@@ -23,7 +23,7 @@ public class AccountsService {
         Account newAccount = new Account(
                 request.getName(),
                 request.getCurrency(),
-                Money.of(request.getBalance(), request.getCurrency().getCurrencyCode()),
+                request.getBalance(),
                 request.isTreasury()
         );
         accountsRepository.save(newAccount);
