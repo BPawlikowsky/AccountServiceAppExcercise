@@ -39,6 +39,8 @@ public class AccountsService {
     public boolean transferMoney(TransferMoneyRequest request) {
         Account fromAccount = accountsRepository.findByName(request.getFromAccount()).get(0);
         Account toAccount = accountsRepository.findByName(request.getToAccount()).get(0);
+        if(!fromAccount.getTreasury() && (fromAccount.getBalance().subtract(request.getAmount()).intValue()) < 0)
+            return false;
         Money fromMoney = Money.of(fromAccount.getBalance(), fromAccount.getCurrency().getCurrencyCode());
         Money toMoney = Money.of(toAccount.getBalance(), toAccount.getCurrency().getCurrencyCode());
 
