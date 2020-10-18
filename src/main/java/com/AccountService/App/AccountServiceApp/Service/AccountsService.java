@@ -3,6 +3,7 @@ package com.AccountService.App.AccountServiceApp.Service;
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
+import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
 import org.javamoney.moneta.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,5 +31,9 @@ public class AccountsService {
             accountsRepository.save(newAccount);
             return true;
         }
+    }
+
+    public boolean transferMoney(TransferMoneyRequest request) {
+        return true;
     }
 }
