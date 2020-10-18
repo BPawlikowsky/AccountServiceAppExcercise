@@ -8,6 +8,9 @@ import org.javamoney.moneta.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.money.Monetary;
+import javax.money.MonetaryAmount;
+
 @Service
 public class AccountsService {
 
@@ -34,6 +37,31 @@ public class AccountsService {
     }
 
     public boolean transferMoney(TransferMoneyRequest request) {
+        Account fromAccount = accountsRepository.findByName(request.getFromAccount()).get(0);
+        Account toAccount = accountsRepository.findByName(request.getToAccount()).get(0);
+        Money fromMoney = Money.of(fromAccount.getBalance(), fromAccount.getCurrency().getCurrencyCode());
+        Money toMoney = Money.of(toAccount.getBalance(), toAccount.getCurrency().getCurrencyCode());
+
+        //Subtract from sending account
+        MonetaryAmount amountToSubstract = Monetary.getDefaultAmountFactory()
+                .setNumber(request.getAmount())
+                .setCurrency(fromMoney.getCurrency())
+                .create();
+        fromMoney = fromMoney.subtract(amountToSubstract);
+        fromAccount.setBalance(fromMoney.getNumberStripped());
+
+        //Add to receiving account
+        MonetaryAmount amountToAdd = Monetary.getDefaultAmountFactory()
+                .setNumber(request.getAmount())
+                .setCurrency(toMoney.getCurrency())
+                .create();
+        toMoney = toMoney.add(amountToAdd);
+        toAccount.setBalance(toMoney.getNumberStripped());
+
+        //Persist
+        accountsRepository.save(fromAccount);
+        accountsRepository.save(toAccount);
+
         return true;
     }
 }
