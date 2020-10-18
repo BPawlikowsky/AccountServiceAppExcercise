@@ -15,7 +15,8 @@ public class AccountsService {
         System.out.println(
                 request.getName() +
                         request.getCurrency() +
-                        request.getMoney() + request.isTreasury()
+                        request.getBalance().intValue() +
+                        request.isTreasury()
         );
         return true;
     }

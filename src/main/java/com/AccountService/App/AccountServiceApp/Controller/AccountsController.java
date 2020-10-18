@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,7 @@ public class AccountsController {
 
     @PostMapping("/accounts")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public ResponseEntity<HttpStatus> createAccount(CreateAccountRequest request) {
+    public ResponseEntity<HttpStatus> createAccount(@RequestBody CreateAccountRequest request) {
         if(accountsService.createAccount(request))
             return new ResponseEntity<>(HttpStatus.CREATED);
         else
