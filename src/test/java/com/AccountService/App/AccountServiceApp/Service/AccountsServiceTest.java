@@ -1,7 +1,10 @@
 package com.AccountService.App.AccountServiceApp.Service;
 
+import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
+import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,6 +61,85 @@ public class AccountsServiceTest {
 
         when(accountsService.createAccount(request)).thenReturn(Boolean.FALSE);
         Boolean actualResponse = accountsService.createAccount(request);
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+
+    @Before
+    public void createTestAccounts() {
+        Account fromTestAccount = new Account(
+                "fromTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                true
+        );
+        Account toTestAccount = new Account(
+                "toTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                true
+        );
+        accountsRepository.save(toTestAccount);
+        accountsRepository.save(fromTestAccount);
+    }
+    @Test
+    @DisplayName("When valid moneyTrasferRequest is recieved, return true")
+    public void transferMoney_Accepted() {
+        TransferMoneyRequest request = new TransferMoneyRequest(
+                "fromTest",
+                "toTest",
+                BigDecimal.valueOf(100)
+        );
+
+        Boolean expectedResponse = Boolean.TRUE;
+
+        when(accountsService.transferMoney(request)).thenReturn(Boolean.TRUE);
+        Boolean actualResponse = accountsService.transferMoney(request);
+        assertEquals(expectedResponse, actualResponse);
+    }
+    @Test
+    @DisplayName("When wrong fromAccount is recieved, return false")
+    public void transferMoney_WrongFromAccount() {
+        TransferMoneyRequest request = new TransferMoneyRequest(
+                "",
+                "toTest",
+                BigDecimal.valueOf(100)
+        );
+
+        Boolean expectedResponse = Boolean.FALSE;
+
+        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
+        Boolean actualResponse = accountsService.transferMoney(request);
+        assertEquals(expectedResponse, actualResponse);
+    }
+    @Test
+    @DisplayName("When wrong toAccount is recieved, return false")
+    public void transferMoney_WrongToAccount() {
+        TransferMoneyRequest request = new TransferMoneyRequest(
+                "fromTest",
+                "",
+                BigDecimal.valueOf(100)
+        );
+
+        Boolean expectedResponse = Boolean.FALSE;
+
+        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
+        Boolean actualResponse = accountsService.transferMoney(request);
+        assertEquals(expectedResponse, actualResponse);
+    }
+    @Test
+    @DisplayName("When wrong Amount is recieved, return false")
+    public void transferMoney_WrongAmount() {
+        TransferMoneyRequest request = new TransferMoneyRequest(
+                "fromTest",
+                "toTest",
+                BigDecimal.valueOf(-100)
+        );
+
+        Boolean expectedResponse = Boolean.FALSE;
+
+        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
+        Boolean actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
 }

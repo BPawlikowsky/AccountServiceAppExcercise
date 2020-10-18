@@ -39,8 +39,20 @@ public class AccountsService {
     }
 
     public boolean transferMoney(TransferMoneyRequest request) {
-        Account fromAccount = accountsRepository.findByName(request.getFromAccount()).get(0);
-        Account toAccount = accountsRepository.findByName(request.getToAccount()).get(0);
+        Account fromAccount, toAccount;
+        //Check if accounts exist
+        try {
+            fromAccount = accountsRepository.findByName(request.getFromAccount()).get(0);
+            toAccount = accountsRepository.findByName(request.getToAccount()).get(0);
+        }
+        catch (IndexOutOfBoundsException e) {
+            System.out.println("Account not found: " + e.getMessage());
+            return false;
+        }
+        //Check if valid amount
+        if(request.getAmount() != null && request.getAmount().intValue() < 0)
+            return false;
+
         //Check if transaction is legal for given from account
         if(!fromAccount.getTreasury() && (fromAccount.getBalance().subtract(request.getAmount()).intValue()) < 0)
             return false;
@@ -55,16 +67,15 @@ public class AccountsService {
         fromMoney = fromMoney.subtract(amountToSubstract);
         fromAccount.setBalance(fromMoney.getNumberStripped());
 
-        //Add to receiving account
+        //Currency Conversion
         MonetaryAmount amountToAdd = Monetary.getDefaultAmountFactory()
                 .setNumber(request.getAmount())
                 .setCurrency(fromMoney.getCurrency())
                 .create();
 
-        //Currency Conversion
         CurrencyConversion conversion = MonetaryConversions.getConversion(toMoney.getCurrency());
         MonetaryAmount convertedAmount = amountToAdd.with(conversion);
-
+        //Add to receiving account
         toMoney = toMoney.add(convertedAmount);
         toAccount.setBalance(toMoney.getNumberStripped());
 
