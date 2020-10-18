@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
+import javax.money.convert.CurrencyConversion;
+import javax.money.convert.MonetaryConversions;
 
 @Service
 public class AccountsService {
@@ -39,6 +41,7 @@ public class AccountsService {
     public boolean transferMoney(TransferMoneyRequest request) {
         Account fromAccount = accountsRepository.findByName(request.getFromAccount()).get(0);
         Account toAccount = accountsRepository.findByName(request.getToAccount()).get(0);
+        //Check if transaction is legal for given from account
         if(!fromAccount.getTreasury() && (fromAccount.getBalance().subtract(request.getAmount()).intValue()) < 0)
             return false;
         Money fromMoney = Money.of(fromAccount.getBalance(), fromAccount.getCurrency().getCurrencyCode());
@@ -55,9 +58,14 @@ public class AccountsService {
         //Add to receiving account
         MonetaryAmount amountToAdd = Monetary.getDefaultAmountFactory()
                 .setNumber(request.getAmount())
-                .setCurrency(toMoney.getCurrency())
+                .setCurrency(fromMoney.getCurrency())
                 .create();
-        toMoney = toMoney.add(amountToAdd);
+
+        //Currency Conversion
+        CurrencyConversion conversion = MonetaryConversions.getConversion(toMoney.getCurrency());
+        MonetaryAmount convertedAmount = amountToAdd.with(conversion);
+
+        toMoney = toMoney.add(convertedAmount);
         toAccount.setBalance(toMoney.getNumberStripped());
 
         //Persist
