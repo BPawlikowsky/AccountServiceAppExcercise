@@ -13,11 +13,18 @@ public class Account {
     private long id;
 
     @Column
-    private String Name;
+    private String name;
     @Column
     private Currency currency;
     @Column
     private Money balance;
     @Column
     private Boolean treasury;
+
+    public Account(String name, Currency currency, Money balance, boolean treasury) {
+        this.name = name;
+        this.currency = currency;
+        this.balance = balance;
+        this.treasury = treasury;
+    }
 }
