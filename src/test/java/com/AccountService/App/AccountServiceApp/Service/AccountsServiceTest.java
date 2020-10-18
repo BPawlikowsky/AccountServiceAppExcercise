@@ -71,13 +71,13 @@ public class AccountsServiceTest {
                 "fromTest",
                 Currency.getInstance("EUR"),
                 BigDecimal.valueOf(1000),
-                true
+                false
         );
         Account toTestAccount = new Account(
                 "toTest",
                 Currency.getInstance("EUR"),
                 BigDecimal.valueOf(1000),
-                true
+                false
         );
         accountsRepository.save(toTestAccount);
         accountsRepository.save(fromTestAccount);
@@ -139,6 +139,54 @@ public class AccountsServiceTest {
         Boolean expectedResponse = Boolean.FALSE;
 
         when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
+        Boolean actualResponse = accountsService.transferMoney(request);
+        assertEquals(expectedResponse, actualResponse);
+    }
+    @Test
+    @DisplayName("When non treasury account try's to transfer too many funds, return false")
+    public void transferMoney_NonTreasuryNegative() {
+        TransferMoneyRequest request = new TransferMoneyRequest(
+                "fromTest",
+                "toTest",
+                BigDecimal.valueOf(1100)
+        );
+
+        Boolean expectedResponse = Boolean.FALSE;
+
+        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
+        Boolean actualResponse = accountsService.transferMoney(request);
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Before
+    public void createTreasuryTestAccounts() {
+        Account fromTestAccount = new Account(
+                "fromTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                true
+        );
+        Account toTestAccount = new Account(
+                "toTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                true
+        );
+        accountsRepository.save(toTestAccount);
+        accountsRepository.save(fromTestAccount);
+    }
+    @Test
+    @DisplayName("When non treasury account try's to transfer too many funds, return false")
+    public void transferMoney_TreasuryNegative() {
+        TransferMoneyRequest request = new TransferMoneyRequest(
+                "fromTest",
+                "toTest",
+                BigDecimal.valueOf(1100)
+        );
+
+        Boolean expectedResponse = Boolean.TRUE;
+
+        when(accountsService.transferMoney(request)).thenReturn(Boolean.TRUE);
         Boolean actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
