@@ -28,26 +28,39 @@ public class AccountsController {
 
     @GetMapping("/accounts")
     @ResponseStatus(code = HttpStatus.OK)
-    public List<Account> listAllAccounts() {
-        return accountsService.getAllAccounts();
+    public ResponseEntity<List<Account>> listAllAccounts() {
+        List<Account> listAll = accountsService.getAllAccounts();
+        if(listAll.size() != 0)
+            return new ResponseEntity<List<Account>>(listAll, HttpStatus.FOUND);
+        else
+            return new ResponseEntity<List<Account>>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/accounts/findByName/{name}")
     @ResponseStatus(code = HttpStatus.OK)
-    public List<Account> findByName(@PathVariable String name) {
-        return accountsService.findAccountByName(name);
+    public ResponseEntity<List<Account>> findByName(@PathVariable String name) {
+        List<Account> listByName = accountsService.findAccountByName(name);
+        if(listByName.size() != 0)
+            return new ResponseEntity<List<Account>>(listByName, HttpStatus.FOUND);
+        else return new ResponseEntity<List<Account>>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/accounts/findByCurrency/{currency}")
     @ResponseStatus(code = HttpStatus.OK)
-    public List<Account> findByCurrency(@PathVariable String currency) {
-        return accountsService.findAccountByCurrency(currency);
+    public ResponseEntity<List<Account>> findByCurrency(@PathVariable String currency) {
+        List<Account> listByCurrency = accountsService.findAccountByCurrency(currency);
+        if(listByCurrency.size() != 0)
+            return new ResponseEntity<List<Account>>(listByCurrency, HttpStatus.FOUND);
+        else return new ResponseEntity<List<Account>>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/accounts/findByTreasury/{treasury}")
     @ResponseStatus(code = HttpStatus.OK)
-    public List<Account> findByTreasury(@PathVariable Boolean treasury) {
-        return accountsService.findAccountByTreasury(treasury);
+    public ResponseEntity<List<Account>> findByTreasury(@PathVariable Boolean treasury) {
+        List<Account> listByTreasury = accountsService.findAccountByTreasury(treasury);
+        if(listByTreasury.size() != 0)
+            return new ResponseEntity<List<Account>>(listByTreasury, HttpStatus.FOUND);
+        else return new ResponseEntity<List<Account>>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/accounts/transfer")

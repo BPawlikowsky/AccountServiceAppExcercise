@@ -193,5 +193,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findAll recieved and database as fields, return true")
-    public void
+    public void findAll() {
+
+    }
 }
