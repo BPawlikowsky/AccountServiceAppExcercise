@@ -12,6 +12,8 @@ import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 import javax.money.convert.CurrencyConversion;
 import javax.money.convert.MonetaryConversions;
+import java.util.Currency;
+import java.util.List;
 
 @Service
 public class AccountsService {
@@ -54,10 +56,13 @@ public class AccountsService {
             return false;
 
         //Check if transaction is legal for given from account
-        if(!fromAccount.getTreasury() && (fromAccount.getBalance().subtract(request.getAmount()).intValue()) < 0)
+        if(
+                !fromAccount.getTreasury() &&
+                (fromAccount.getBalance().getNumberStripped().subtract(request.getAmount()).intValue()) < 0
+        )
             return false;
-        Money fromMoney = Money.of(fromAccount.getBalance(), fromAccount.getCurrency().getCurrencyCode());
-        Money toMoney = Money.of(toAccount.getBalance(), toAccount.getCurrency().getCurrencyCode());
+        Money fromMoney = Money.of(fromAccount.getBalance().getNumber(), fromAccount.getCurrency().getCurrencyCode());
+        Money toMoney = Money.of(toAccount.getBalance().getNumber(), toAccount.getCurrency().getCurrencyCode());
 
         //Subtract from sending account
         MonetaryAmount amountToSubstract = Monetary.getDefaultAmountFactory()
@@ -84,5 +89,21 @@ public class AccountsService {
         accountsRepository.save(toAccount);
 
         return true;
+    }
+
+    public List<Account> getAllAccounts() {
+        return accountsRepository.findAll();
+    }
+
+    public List<Account> findAccountByName(String name) {
+        return accountsRepository.findByName(name);
+    }
+
+    public List<Account> findAccountByCurrency(String currency) {
+        return accountsRepository.findByCurrency(Currency.getInstance(currency));
+    }
+
+    public List<Account> findAccountByTreasury(Boolean treasury) {
+        return accountsRepository.findByTreasury(treasury);
     }
 }

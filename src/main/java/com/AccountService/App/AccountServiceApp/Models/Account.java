@@ -3,6 +3,7 @@ package com.AccountService.App.AccountServiceApp.Models;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.javamoney.moneta.Money;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -22,7 +23,7 @@ public class Account {
     @Getter@Setter
     @Column
     private Currency currency;
-    @Getter@Setter
+    @Setter
     @Column
     private BigDecimal balance;
     @Getter
@@ -34,5 +35,9 @@ public class Account {
         this.currency = currency;
         this.balance = balance;
         this.treasury = treasury;
+    }
+
+    public Money getBalance() {
+        return Money.of(balance, currency.getCurrencyCode());
     }
 }
