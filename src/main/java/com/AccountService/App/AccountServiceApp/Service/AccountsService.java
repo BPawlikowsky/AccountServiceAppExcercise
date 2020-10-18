@@ -14,19 +14,21 @@ public class AccountsService {
     private AccountsRepository accountsRepository;
 
     public boolean createAccount(CreateAccountRequest request) {
-        System.out.println(
-                request.getName() +
-                        request.getCurrency() +
-                        request.getBalance().intValue() +
-                        request.isTreasury()
-        );
-        Account newAccount = new Account(
-                request.getName(),
-                request.getCurrency(),
-                request.getBalance(),
-                request.isTreasury()
-        );
-        accountsRepository.save(newAccount);
-        return true;
+        if(request.getName().equals(""))
+            return false;
+        else if(request.getCurrency() == null)
+            return false;
+        else if(request.getBalance() == null)
+            return false;
+        else {
+            Account newAccount = new Account(
+                    request.getName(),
+                    request.getCurrency(),
+                    request.getBalance(),
+                    request.isTreasury()
+            );
+            accountsRepository.save(newAccount);
+            return true;
+        }
     }
 }
