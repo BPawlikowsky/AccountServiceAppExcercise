@@ -1,5 +1,6 @@
 package com.AccountService.App.AccountServiceApp.Controller;
 
+import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Service.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,8 @@ public class AccountsController {
 
     @PostMapping("/accounts")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public ResponseEntity<HttpStatus> createAccount() {
-        if(accountsService.createAccount())
+    public ResponseEntity<HttpStatus> createAccount(CreateAccountRequest request) {
+        if(accountsService.createAccount(request))
             return new ResponseEntity<>(HttpStatus.CREATED);
         else
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
