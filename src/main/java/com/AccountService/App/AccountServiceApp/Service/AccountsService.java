@@ -2,6 +2,7 @@ package com.AccountService.App.AccountServiceApp.Service;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
@@ -120,19 +121,31 @@ public class AccountsService {
         return new TransferMoneyResponse(status, request);
     }
 
-    public List<Account> getAllAccounts() {
-        return accountsRepository.findAll();
+    public List<Account> getAllAccounts() throws AccountsListException {
+        List<Account> list = accountsRepository.findAll();
+        if(list.size() == 0)
+            throw new AccountsListException("No accounts in database.");
+        return list;
     }
 
-    public List<Account> findAccountByName(String name) {
-        return accountsRepository.findByName(name);
+    public List<Account> findAccountByName(String name) throws AccountsListException {
+        List<Account> list = accountsRepository.findByName(name);
+        if(list.size() == 0)
+            throw new AccountsListException("Couldn't find account " + name + " in the database.");
+        return list;
     }
 
-    public List<Account> findAccountByCurrency(String currency) {
-        return accountsRepository.findByCurrency(Currency.getInstance(currency));
+    public List<Account> findAccountByCurrency(String currency) throws AccountsListException {
+        List<Account> list = accountsRepository.findByCurrency(Currency.getInstance(currency));
+        if(list.size() == 0)
+            throw new AccountsListException("Couldn't find currency " + currency + " in the database.");
+        return list;
     }
 
-    public List<Account> findAccountByTreasury(Boolean treasury) {
-        return accountsRepository.findByTreasury(treasury);
+    public List<Account> findAccountByTreasury(Boolean treasury) throws AccountsListException {
+        List<Account> list = accountsRepository.findByTreasury(treasury);
+        if(list.size() == 0)
+            throw new AccountsListException("Couldn't find treasury accounts in the database.");
+        return list;
     }
 }

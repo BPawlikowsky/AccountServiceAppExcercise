@@ -1,6 +1,7 @@
 package com.AccountService.App.AccountServiceApp.Controller;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
@@ -35,7 +36,7 @@ public class AccountsController {
     @GetMapping("/accounts")
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<Account>> listAllAccounts() {
+    public ResponseEntity<List<Account>> listAllAccounts() throws AccountsListException {
         List<Account> listAll = accountsService.getAllAccounts();
         if(listAll.size() != 0)
             return new ResponseEntity<>(listAll, HttpStatus.FOUND);
@@ -46,7 +47,7 @@ public class AccountsController {
     @GetMapping("/accounts/findByName/{name}")
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<Account>> findByName(@PathVariable String name) {
+    public ResponseEntity<List<Account>> findByName(@PathVariable String name) throws AccountsListException {
         List<Account> listByName = accountsService.findAccountByName(name);
         if(listByName.size() != 0)
             return new ResponseEntity<>(listByName, HttpStatus.FOUND);
@@ -56,7 +57,7 @@ public class AccountsController {
     @GetMapping("/accounts/findByCurrency/{currency}")
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<Account>> findByCurrency(@PathVariable String currency) {
+    public ResponseEntity<List<Account>> findByCurrency(@PathVariable String currency) throws AccountsListException {
         List<Account> listByCurrency = accountsService.findAccountByCurrency(currency);
         if(listByCurrency.size() != 0)
             return new ResponseEntity<>(listByCurrency, HttpStatus.FOUND);
@@ -66,7 +67,7 @@ public class AccountsController {
     @GetMapping("/accounts/findByTreasury/{treasury}")
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<Account>> findByTreasury(@PathVariable Boolean treasury) {
+    public ResponseEntity<List<Account>> findByTreasury(@PathVariable Boolean treasury) throws AccountsListException {
         List<Account> listByTreasury = accountsService.findAccountByTreasury(treasury);
         if(listByTreasury.size() != 0)
             return new ResponseEntity<List<Account>>(listByTreasury, HttpStatus.FOUND);

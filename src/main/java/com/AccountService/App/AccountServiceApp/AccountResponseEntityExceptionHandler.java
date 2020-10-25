@@ -1,5 +1,6 @@
 package com.AccountService.App.AccountServiceApp;
 
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.google.gson.JsonObject;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -28,7 +30,7 @@ public class AccountResponseEntityExceptionHandler extends ResponseEntityExcepti
         responseBody.addProperty("error", "accerr");
         responseBody.addProperty("message", "Account request: " + ex.getMessage());
         responseBody.addProperty("details", "The request body was incorrectly formatted or empty.");
-        responseBody.addProperty("path", "/accounts");
+        responseBody.addProperty("path", ((ServletWebRequest)request).getRequest().getRequestURI());
         HttpHeaders header = new HttpHeaders();
         header.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
         String bodyOfResponse = responseBody.toString();
@@ -41,10 +43,23 @@ public class AccountResponseEntityExceptionHandler extends ResponseEntityExcepti
         responseBody.addProperty("error", "transerr");
         responseBody.addProperty("message", "Transfer request failed");
         responseBody.addProperty("details", ex.getMessage());
-        responseBody.addProperty("path", "/accounts/transfer");
+        responseBody.addProperty("path", ((ServletWebRequest)request).getRequest().getRequestURI());
         HttpHeaders header = new HttpHeaders();
         header.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
         String bodyOfResponse = responseBody.toString();
-        return handleExceptionInternal(ex, bodyOfResponse, header, HttpStatus.BAD_REQUEST, request);
+        return handleExceptionInternal(ex, bodyOfResponse, header, HttpStatus.NOT_ACCEPTABLE, request);
+    }
+
+    @ExceptionHandler(AccountsListException.class)
+    protected ResponseEntity<Object> handleTransferMoney(AccountsListException ex, WebRequest request) {
+        JsonObject responseBody = new JsonObject();
+        responseBody.addProperty("error", "acclist");
+        responseBody.addProperty("message", "List accounts request failed");
+        responseBody.addProperty("details", ex.getMessage());
+        responseBody.addProperty("path", ((ServletWebRequest)request).getRequest().getRequestURI());
+        HttpHeaders header = new HttpHeaders();
+        header.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+        String bodyOfResponse = responseBody.toString();
+        return handleExceptionInternal(ex, bodyOfResponse, header, HttpStatus.NOT_FOUND, request);
     }
 }

@@ -249,7 +249,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findAll received and database as fields, non empty list")
-    public void findAll() {
+    public void findAll() throws AccountsListException {
         List<Account> expectedResponse = accountList;
         when(accountsService.getAllAccounts()).thenReturn(accountList);
 
@@ -259,7 +259,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findAll recieved and database empty, return empty list")
-    public void findAll_NotFound() {
+    public void findAll_NotFound() throws AccountsListException {
         List<Account> expectedResponse = Lists.emptyList();
         when(accountsService.getAllAccounts()).thenReturn(Lists.emptyList());
 
@@ -269,7 +269,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findByName found, return Non empty List")
-    public void findByName_Found() {
+    public void findByName_Found() throws AccountsListException {
         List<Account> expectedResponse = List.of(accountList.get(0));
         when(accountsService.findAccountByName("fromTest")).thenReturn(expectedResponse);
 
@@ -279,7 +279,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findByName not found, return empty List")
-    public void findByName_NotFound() {
+    public void findByName_NotFound() throws AccountsListException {
         List<Account> expectedResponse = Lists.emptyList();
         when(accountsService.findAccountByName("TestX")).thenReturn(expectedResponse);
 
@@ -289,7 +289,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findByCurrency found, return Non empty List")
-    public void findByCurrency_Found() {
+    public void findByCurrency_Found() throws AccountsListException {
         List<Account> expectedResponse = accountList;
         when(accountsService.findAccountByCurrency("EUR")).thenReturn(expectedResponse);
 
@@ -299,7 +299,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findByCurrency found, return empty List")
-    public void findByCurrency_NotFound() {
+    public void findByCurrency_NotFound() throws AccountsListException {
         List<Account> expectedResponse = Lists.emptyList();
         when(accountsService.findAccountByCurrency("USD")).thenReturn(expectedResponse);
 
@@ -309,7 +309,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findByCurrency found, return Non empty List")
-    public void findByTreasury_Found() {
+    public void findByTreasury_Found() throws AccountsListException {
         List<Account> expectedResponse = accountList;
         when(accountsService.findAccountByTreasury(true)).thenReturn(expectedResponse);
 
@@ -319,7 +319,7 @@ public class AccountsServiceTest {
 
     @Test
     @DisplayName("When findByCurrency found, return empty List")
-    public void findByTreasury_NotFound() {
+    public void findByTreasury_NotFound() throws AccountsListException {
         List<Account> expectedResponse = Lists.emptyList();
         when(accountsService.findAccountByTreasury(false)).thenReturn(expectedResponse);
 

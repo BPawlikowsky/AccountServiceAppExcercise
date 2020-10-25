@@ -2,6 +2,7 @@ package com.AccountService.App.AccountServiceApp.Controller;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
@@ -95,7 +96,7 @@ public class AccountsControllerTest {
     }
 
     @Test
-    public void listAllAccounts() {
+    public void listAllAccounts() throws AccountsListException {
         ResponseEntity<List<Account>> expectedResponse = new ResponseEntity<>(accountList, HttpStatus.FOUND);
 
         when(accountsController.listAllAccounts()).thenReturn(expectedResponse);
@@ -104,7 +105,7 @@ public class AccountsControllerTest {
     }
 
     @Test
-    public void findByName() {
+    public void findByName() throws AccountsListException {
         ResponseEntity<List<Account>> expectedResponse = new ResponseEntity<>(List.of(accountList.get(0)), HttpStatus.FOUND);
 
         when(accountsController.findByName("fromTest")).thenReturn(expectedResponse);
@@ -113,7 +114,7 @@ public class AccountsControllerTest {
     }
 
     @Test
-    public void findByCurrency() {
+    public void findByCurrency() throws AccountsListException {
         ResponseEntity<List<Account>> expectedResponse = new ResponseEntity<>(accountList, HttpStatus.FOUND);
 
         when(accountsController.findByCurrency("EUR")).thenReturn(expectedResponse);
@@ -122,7 +123,7 @@ public class AccountsControllerTest {
     }
 
     @Test
-    public void findByTreasury() {
+    public void findByTreasury() throws AccountsListException {
         ResponseEntity<List<Account>> expectedResponse = new ResponseEntity<>(accountList, HttpStatus.FOUND);
 
         when(accountsController.findByTreasury(false)).thenReturn(expectedResponse);
