@@ -121,77 +121,78 @@ public class AccountsServiceTest {
     }
     @Test
     @DisplayName("When valid moneyTransferRequest is received, return true")
-    public void transferMoney_Accepted() {
+    public void transferMoney_Accepted() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(100)
         );
 
-        Boolean expectedResponse = Boolean.TRUE;
+        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("Transaction successful.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(Boolean.TRUE);
-        Boolean actualResponse = accountsService.transferMoney(request);
+        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
+        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
     @Test
-    @DisplayName("When wrong fromAccount is recieved, return false")
-    public void transferMoney_WrongFromAccount() {
+    @DisplayName("When wrong fromAccount is received")
+    public void transferMoney_WrongFromAccount() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "",
                 "toTest",
                 BigDecimal.valueOf(100)
         );
 
-        Boolean expectedResponse = Boolean.FALSE;
+        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("One of the accounts doesn't exist.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
-        Boolean actualResponse = accountsService.transferMoney(request);
+        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
+        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
     @Test
     @DisplayName("When wrong toAccount is recieved, return false")
-    public void transferMoney_WrongToAccount() {
+    public void transferMoney_WrongToAccount() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "",
                 BigDecimal.valueOf(100)
         );
 
-        Boolean expectedResponse = Boolean.FALSE;
+        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("One of the accounts doesn't exist.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
-        Boolean actualResponse = accountsService.transferMoney(request);
+        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
+        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
     @Test
     @DisplayName("When wrong Amount is recieved, return false")
-    public void transferMoney_WrongAmount() {
+    public void transferMoney_WrongAmount() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(-100)
         );
 
-        Boolean expectedResponse = Boolean.FALSE;
+        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("Amount is a negative value.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
-        Boolean actualResponse = accountsService.transferMoney(request);
+        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
+        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
     @Test
     @DisplayName("When non treasury account try's to transfer too many funds, return false")
-    public void transferMoney_NonTreasuryNegative() {
+    public void transferMoney_NonTreasuryNegative() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(1100)
         );
 
-        Boolean expectedResponse = Boolean.FALSE;
+        TransferMoneyResponse expectedResponse =
+                new TransferMoneyResponse("Transaction is illegal for a given fromAccount.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(Boolean.FALSE);
-        Boolean actualResponse = accountsService.transferMoney(request);
+        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
+        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
 
@@ -214,17 +215,18 @@ public class AccountsServiceTest {
     }
     @Test
     @DisplayName("When non treasury account try's to transfer too many funds, return false")
-    public void transferMoney_TreasuryNegative() {
+    public void transferMoney_TreasuryNegative() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(1100)
         );
 
-        Boolean expectedResponse = Boolean.TRUE;
+        TransferMoneyResponse expectedResponse =
+                new TransferMoneyResponse("Transaction is illegal for a given fromAccount.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(Boolean.TRUE);
-        Boolean actualResponse = accountsService.transferMoney(request);
+        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
+        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
 
@@ -246,7 +248,7 @@ public class AccountsServiceTest {
     }
 
     @Test
-    @DisplayName("When findAll recieved and database as fields, non empty list")
+    @DisplayName("When findAll received and database as fields, non empty list")
     public void findAll() {
         List<Account> expectedResponse = accountList;
         when(accountsService.getAllAccounts()).thenReturn(accountList);

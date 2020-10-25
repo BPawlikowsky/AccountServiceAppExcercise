@@ -2,9 +2,11 @@ package com.AccountService.App.AccountServiceApp.Controller;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
 import com.AccountService.App.AccountServiceApp.Models.Responses.CreateAccountResponse;
+import com.AccountService.App.AccountServiceApp.Models.Responses.TransferMoneyResponse;
 import com.AccountService.App.AccountServiceApp.Service.AccountsService;
 import org.junit.Before;
 import org.junit.Test;
@@ -129,16 +131,17 @@ public class AccountsControllerTest {
     }
 
     @Test
-    public void transferMoney() {
+    public void transferMoney() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(100)
         );
-        ResponseEntity<HttpStatus> expectedResponse = new ResponseEntity<>(HttpStatus.ACCEPTED);
+        TransferMoneyResponse response = new TransferMoneyResponse("Transaction successful.", request);
+        ResponseEntity<TransferMoneyResponse> expectedResponse = new ResponseEntity<>(HttpStatus.ACCEPTED);
 
         when(accountsController.transferMoney(request)).thenReturn(expectedResponse);
-        ResponseEntity<HttpStatus> actualResponse = accountsController.transferMoney(request);
+        ResponseEntity<TransferMoneyResponse> actualResponse = accountsController.transferMoney(request);
         assertEquals(expectedResponse, actualResponse);
     }
 }

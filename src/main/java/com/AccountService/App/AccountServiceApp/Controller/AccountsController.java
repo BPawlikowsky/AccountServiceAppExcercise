@@ -2,9 +2,11 @@ package com.AccountService.App.AccountServiceApp.Controller;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
 import com.AccountService.App.AccountServiceApp.Models.Responses.CreateAccountResponse;
+import com.AccountService.App.AccountServiceApp.Models.Responses.TransferMoneyResponse;
 import com.AccountService.App.AccountServiceApp.Service.AccountsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -74,10 +76,9 @@ public class AccountsController {
     @PostMapping("/accounts/transfer")
     @ResponseStatus(code = HttpStatus.ACCEPTED)
     @ResponseBody
-    public ResponseEntity<HttpStatus> transferMoney(@RequestBody TransferMoneyRequest request) {
-        if(accountsService.transferMoney(request))
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        else
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+    public ResponseEntity<TransferMoneyResponse> transferMoney(@RequestBody TransferMoneyRequest request)
+    throws TransferMoneyException {
+        TransferMoneyResponse response = accountsService.transferMoney(request);
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 }
