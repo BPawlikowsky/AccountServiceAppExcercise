@@ -4,6 +4,7 @@ import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
+import com.AccountService.App.AccountServiceApp.Models.Responses.CreateAccountResponse;
 import com.AccountService.App.AccountServiceApp.Service.AccountsService;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,26 +33,27 @@ public class AccountsControllerTest {
     private List<Account> accountList;
 
     @Mock
-    AccountsService accountsService;
+    private AccountsService accountsService;
 
     @Mock
-    AccountsRepository accountsRepository;
+    private AccountsRepository accountsRepository;
 
     @Mock
-    AccountsController accountsController;
+    private AccountsController accountsController;
 
     @Test
     public void createAccount() {
-        ResponseEntity<HttpStatus> expectedResponse = new ResponseEntity<>(HttpStatus.CREATED);
         CreateAccountRequest request = new CreateAccountRequest(
                 "Test1",
                 Currency.getInstance("EUR"),
                 BigDecimal.valueOf(1000),
                 true
         );
+        CreateAccountResponse response = new CreateAccountResponse("Account created", request);
+        ResponseEntity<CreateAccountResponse> expectedResponse = new ResponseEntity<>(response, HttpStatus.CREATED);
 
         when(accountsController.createAccount(request)).thenReturn(expectedResponse);
-        ResponseEntity<HttpStatus> actualResponse = accountsController.createAccount(request);
+        ResponseEntity<CreateAccountResponse> actualResponse = accountsController.createAccount(request);
         assertEquals(expectedResponse, actualResponse);
     }
 

@@ -2,8 +2,10 @@ package com.AccountService.App.AccountServiceApp.Service;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
+import com.AccountService.App.AccountServiceApp.Models.Responses.CreateAccountResponse;
 import org.javamoney.moneta.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,13 +23,21 @@ public class AccountsService {
     @Autowired
     private AccountsRepository accountsRepository;
 
-    public boolean createAccount(CreateAccountRequest request) {
-        if(request.getName().equals(""))
-            return false;
-        else if(request.getCurrency() == null)
-            return false;
-        else if(request.getBalance() == null)
-            return false;
+    public CreateAccountResponse createAccount(CreateAccountRequest request) throws CreateAccountException {
+        String status;
+
+        if(request.getName() == null) {
+            status = "No name";
+            throw new CreateAccountException(status);
+        }
+        else if(request.getCurrency() == null) {
+            status = "No currency";
+            throw new CreateAccountException(status);
+        }
+        else if(request.getBalance() == null) {
+            status = "No balance";
+            throw new CreateAccountException(status);
+        }
         else {
             Account newAccount = new Account(
                     request.getName(),
@@ -36,8 +46,9 @@ public class AccountsService {
                     request.isTreasury()
             );
             accountsRepository.save(newAccount);
-            return true;
+            status = "Account created";
         }
+        return new CreateAccountResponse(status, request);
     }
 
     public boolean transferMoney(TransferMoneyRequest request) {

@@ -1,21 +1,30 @@
 package com.AccountService.App.AccountServiceApp.Service;
 
-import com.AccountService.App.AccountServiceApp.Models.Account;
-import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
-import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
-import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
+import com.AccountService.App.AccountServiceApp.Controller.AccountsController;
+import com.AccountService.App.AccountServiceApp.Models.*;
+import com.AccountService.App.AccountServiceApp.Models.Responses.*;
+import com.AccountService.App.AccountServiceApp.Models.Requests.*;
+import com.AccountService.App.AccountServiceApp.Models.Exceptions.*;
+import com.AccountService.App.AccountServiceApp.AccountResponseEntityExceptionHandler;
 import org.assertj.core.util.Lists;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 
 import java.math.BigDecimal;
@@ -29,7 +38,12 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
+@AutoConfigureMockMvc
 public class AccountsServiceTest {
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
 
     private List<Account> accountList;
 
@@ -38,6 +52,12 @@ public class AccountsServiceTest {
 
     @Mock
     private AccountsService accountsService;
+
+    @InjectMocks
+    private AccountsController accountsController;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     @DisplayName("When valid request is received, return true")
@@ -48,26 +68,36 @@ public class AccountsServiceTest {
                 BigDecimal.valueOf(1000),
                 true
         );
-        Boolean expectedResponse = Boolean.TRUE;
-
-        when(accountsService.createAccount(request)).thenReturn(Boolean.TRUE);
-        Boolean actualResponse = accountsService.createAccount(request);
+        CreateAccountResponse expectedResponse = new CreateAccountResponse("Account created", request);
+        when(accountsService.createAccount(request)).thenReturn(expectedResponse);
+        CreateAccountResponse actualResponse = accountsService.createAccount(request);
         assertEquals(expectedResponse, actualResponse);
     }
 
+    @Before
+    public void setupExceptionHandler() {
+        mockMvc = MockMvcBuilders.standaloneSetup(accountsController)
+                .setControllerAdvice(new AccountResponseEntityExceptionHandler())
+                .build();
+    }
+
     @Test
-    @DisplayName("When valid request is received, return false")
+    @DisplayName("When no name is received, return false")
     public void createAccount_Not_Created() {
         CreateAccountRequest request = new CreateAccountRequest(
-                "Test1",
+                "",
                 Currency.getInstance("EUR"),
                 BigDecimal.valueOf(1000),
                 true
         );
-        Boolean expectedResponse = Boolean.FALSE;
+        String status = "No name";
+        CreateAccountResponse expectedResponse = new CreateAccountResponse(status, request);
 
-        when(accountsService.createAccount(request)).thenReturn(Boolean.FALSE);
-        Boolean actualResponse = accountsService.createAccount(request);
+        when(accountsService.createAccount(request))
+                .thenThrow(new CreateAccountException(status))
+                .thenReturn(expectedResponse);
+        exception.expect(CreateAccountException.class);
+        CreateAccountResponse actualResponse = accountsService.createAccount(request);
         assertEquals(expectedResponse, actualResponse);
     }
 
@@ -90,7 +120,7 @@ public class AccountsServiceTest {
         accountsRepository.save(fromTestAccount);
     }
     @Test
-    @DisplayName("When valid moneyTrasferRequest is recieved, return true")
+    @DisplayName("When valid moneyTransferRequest is received, return true")
     public void transferMoney_Accepted() {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
