@@ -1,8 +1,5 @@
-package com.AccountService.App.AccountServiceApp;
+package com.AccountService.App.AccountServiceApp.Exceptions;
 
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

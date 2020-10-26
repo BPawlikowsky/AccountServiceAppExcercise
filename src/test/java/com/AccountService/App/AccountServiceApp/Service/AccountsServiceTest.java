@@ -4,8 +4,8 @@ import com.AccountService.App.AccountServiceApp.Controller.AccountsController;
 import com.AccountService.App.AccountServiceApp.Models.*;
 import com.AccountService.App.AccountServiceApp.Models.Responses.*;
 import com.AccountService.App.AccountServiceApp.Models.Requests.*;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.*;
-import com.AccountService.App.AccountServiceApp.AccountResponseEntityExceptionHandler;
+import com.AccountService.App.AccountServiceApp.Exceptions.*;
+import com.AccountService.App.AccountServiceApp.Exceptions.AccountResponseEntityExceptionHandler;
 import org.assertj.core.util.Lists;
 
 import org.junit.Before;
@@ -311,9 +311,9 @@ public class AccountsServiceTest {
     @DisplayName("When findByCurrency found, return Non empty List")
     public void findByTreasury_Found() throws AccountsListException {
         List<Account> expectedResponse = accountList;
-        when(accountsService.findAccountByTreasury(true)).thenReturn(expectedResponse);
+        when(accountsService.findAccountByTreasury("true")).thenReturn(expectedResponse);
 
-        List<Account> actualResponse = accountsService.findAccountByTreasury(true);
+        List<Account> actualResponse = accountsService.findAccountByTreasury("true");
         assertEquals(expectedResponse, actualResponse);
     }
 
@@ -321,9 +321,9 @@ public class AccountsServiceTest {
     @DisplayName("When findByCurrency found, return empty List")
     public void findByTreasury_NotFound() throws AccountsListException {
         List<Account> expectedResponse = Lists.emptyList();
-        when(accountsService.findAccountByTreasury(false)).thenReturn(expectedResponse);
+        when(accountsService.findAccountByTreasury("false")).thenReturn(expectedResponse);
 
-        List<Account> actualResponse = accountsService.findAccountByTreasury(false);
+        List<Account> actualResponse = accountsService.findAccountByTreasury("false");
         assertEquals(expectedResponse, actualResponse);
     }
 }

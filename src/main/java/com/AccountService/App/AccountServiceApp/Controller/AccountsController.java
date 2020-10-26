@@ -1,9 +1,9 @@
 package com.AccountService.App.AccountServiceApp.Controller;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
+import com.AccountService.App.AccountServiceApp.Exceptions.AccountsListException;
+import com.AccountService.App.AccountServiceApp.Exceptions.CreateAccountException;
+import com.AccountService.App.AccountServiceApp.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
 import com.AccountService.App.AccountServiceApp.Models.Responses.CreateAccountResponse;
@@ -41,7 +41,7 @@ public class AccountsController {
         if(listAll.size() != 0)
             return new ResponseEntity<>(listAll, HttpStatus.FOUND);
         else
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(listAll, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/accounts/findByName/{name}")
@@ -51,7 +51,8 @@ public class AccountsController {
         List<Account> listByName = accountsService.findAccountByName(name);
         if(listByName.size() != 0)
             return new ResponseEntity<>(listByName, HttpStatus.FOUND);
-        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        else
+            return new ResponseEntity<>(listByName, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/accounts/findByCurrency/{currency}")
@@ -61,17 +62,19 @@ public class AccountsController {
         List<Account> listByCurrency = accountsService.findAccountByCurrency(currency);
         if(listByCurrency.size() != 0)
             return new ResponseEntity<>(listByCurrency, HttpStatus.FOUND);
-        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        else
+            return new ResponseEntity<>(listByCurrency, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/accounts/findByTreasury/{treasury}")
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<Account>> findByTreasury(@PathVariable Boolean treasury) throws AccountsListException {
+    public ResponseEntity<List<Account>> findByTreasury(@PathVariable String treasury) throws AccountsListException {
         List<Account> listByTreasury = accountsService.findAccountByTreasury(treasury);
         if(listByTreasury.size() != 0)
-            return new ResponseEntity<List<Account>>(listByTreasury, HttpStatus.FOUND);
-        else return new ResponseEntity<List<Account>>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(listByTreasury, HttpStatus.FOUND);
+        else
+            return new ResponseEntity<>(listByTreasury, HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/accounts/transfer")
@@ -80,6 +83,9 @@ public class AccountsController {
     public ResponseEntity<TransferMoneyResponse> transferMoney(@RequestBody TransferMoneyRequest request)
     throws TransferMoneyException {
         TransferMoneyResponse response = accountsService.transferMoney(request);
-        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        if(response.getStatus().equals("Transaction successful."))
+            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        else
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
     }
 }

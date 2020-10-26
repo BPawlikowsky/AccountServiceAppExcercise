@@ -1,4 +1,4 @@
-package com.AccountService.App.AccountServiceApp.Models.Exceptions;
+package com.AccountService.App.AccountServiceApp.Exceptions;
 
 import lombok.Getter;
 

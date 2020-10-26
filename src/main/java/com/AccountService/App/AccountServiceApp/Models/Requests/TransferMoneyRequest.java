@@ -4,13 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.util.Currency;
 
 @AllArgsConstructor
 @Getter
 public class TransferMoneyRequest {
 
-    private String fromAccount;
-    private String toAccount;
-    private BigDecimal amount;
+    private final String fromAccount;
+    private final String toAccount;
+    private final BigDecimal amount;
 }

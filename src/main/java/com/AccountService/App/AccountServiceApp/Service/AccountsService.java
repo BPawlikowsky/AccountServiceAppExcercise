@@ -2,9 +2,9 @@ package com.AccountService.App.AccountServiceApp.Service;
 
 import com.AccountService.App.AccountServiceApp.Models.Account;
 import com.AccountService.App.AccountServiceApp.Models.AccountsRepository;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.AccountsListException;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.CreateAccountException;
-import com.AccountService.App.AccountServiceApp.Models.Exceptions.TransferMoneyException;
+import com.AccountService.App.AccountServiceApp.Exceptions.AccountsListException;
+import com.AccountService.App.AccountServiceApp.Exceptions.CreateAccountException;
+import com.AccountService.App.AccountServiceApp.Exceptions.TransferMoneyException;
 import com.AccountService.App.AccountServiceApp.Models.Requests.CreateAccountRequest;
 import com.AccountService.App.AccountServiceApp.Models.Requests.TransferMoneyRequest;
 import com.AccountService.App.AccountServiceApp.Models.Responses.CreateAccountResponse;
@@ -19,6 +19,7 @@ import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 import javax.money.convert.CurrencyConversion;
 import javax.money.convert.MonetaryConversions;
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 
@@ -136,14 +137,28 @@ public class AccountsService {
     }
 
     public List<Account> findAccountByCurrency(String currency) throws AccountsListException {
-        List<Account> list = accountsRepository.findByCurrency(Currency.getInstance(currency));
+        List<Account> list = new ArrayList<>(0);
+        try {
+            list = accountsRepository.findByCurrency(Currency.getInstance(currency));
+        }
+        catch (IllegalArgumentException e) {
+            logger.debug("findAccountByCurrency(): " + e.getMessage());
+            throw new AccountsListException("Couldn't identify currency.");
+        }
         if(list.size() == 0)
             throw new AccountsListException("Couldn't find currency " + currency + " in the database.");
         return list;
     }
 
-    public List<Account> findAccountByTreasury(Boolean treasury) throws AccountsListException {
-        List<Account> list = accountsRepository.findByTreasury(treasury);
+    public List<Account> findAccountByTreasury(String treasury) throws AccountsListException {
+        if(treasury.equals("") ||
+                (!treasury.equals("0") && !treasury.equals("1") &&
+                !treasury.toLowerCase().equals("true") &&
+                !treasury.toLowerCase().equals("false"))
+        ) {
+            throw new AccountsListException("Wrong value, not boolean(true, false, 1, 0).");
+        }
+        List<Account> list = accountsRepository.findByTreasury(Boolean.valueOf(treasury));
         if(list.size() == 0)
             throw new AccountsListException("Couldn't find treasury accounts in the database.");
         return list;

@@ -1,4 +1,4 @@
-package com.AccountService.App.AccountServiceApp.Models.Exceptions;
+package com.AccountService.App.AccountServiceApp.Exceptions;
 
 public class TransferMoneyException extends Exception {
 
