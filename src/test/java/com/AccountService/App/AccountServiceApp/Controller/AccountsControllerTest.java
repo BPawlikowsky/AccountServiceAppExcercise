@@ -205,8 +205,6 @@ public class AccountsControllerTest {
         assertThrows(AccountsListException.class, () -> accountsController.findByTreasury(request));
     }
 
-
-
     @Test
     public void transferMoney_ACCEPTED() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
