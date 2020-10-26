@@ -94,11 +94,11 @@ public class AccountsService {
             Money toMoney = Money.of(toAccount.getBalance().getNumber(), toAccount.getCurrency().getCurrencyCode());
 
             //Subtract from sending account
-            MonetaryAmount amountToSubstract = Monetary.getDefaultAmountFactory()
+            MonetaryAmount amountToSubtract = Monetary.getDefaultAmountFactory()
                     .setNumber(request.getAmount())
                     .setCurrency(fromMoney.getCurrency())
                     .create();
-            fromMoney = fromMoney.subtract(amountToSubstract);
+            fromMoney = fromMoney.subtract(amountToSubtract);
             fromAccount.setBalance(fromMoney.getNumberStripped());
 
             //Currency Conversion

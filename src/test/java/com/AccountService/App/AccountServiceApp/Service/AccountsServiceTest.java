@@ -1,66 +1,68 @@
 package com.AccountService.App.AccountServiceApp.Service;
-
-import com.AccountService.App.AccountServiceApp.Controller.AccountsController;
 import com.AccountService.App.AccountServiceApp.Models.*;
 import com.AccountService.App.AccountServiceApp.Models.Responses.*;
 import com.AccountService.App.AccountServiceApp.Models.Requests.*;
 import com.AccountService.App.AccountServiceApp.Exceptions.*;
-import com.AccountService.App.AccountServiceApp.Exceptions.AccountResponseEntityExceptionHandler;
-import org.assertj.core.util.Lists;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
-@AutoConfigureMockMvc
 public class AccountsServiceTest {
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+    Logger logger = LoggerFactory.getLogger(AccountsServiceTest.class);
 
-
+    private Account fromTestAccount, toTestAccount;
     private List<Account> accountList;
 
-    @Mock
+    @Autowired
     private AccountsRepository accountsRepository;
 
-    @Mock
+    @Autowired
     private AccountsService accountsService;
 
-    @InjectMocks
-    private AccountsController accountsController;
+    @BeforeEach
+    public void createTestAccounts() {
+        fromTestAccount = new Account(
+                "fromTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                false
+        );
+        toTestAccount = new Account(
+                "toTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                false
+        );
+        accountsRepository.save(fromTestAccount);
+        accountsRepository.save(toTestAccount);
+        accountList = Arrays.asList(fromTestAccount, toTestAccount);
+    }
 
-    @Autowired
-    private MockMvc mockMvc;
+    @AfterEach
+    public void cleanup() {
+        accountsRepository.delete(fromTestAccount);
+        accountsRepository.delete(toTestAccount);
+    }
 
     @Test
-    @DisplayName("When valid request is received, return true")
+    @DisplayName("When valid request is received")
     public void createAccount_Created() {
         CreateAccountRequest request = new CreateAccountRequest(
                 "Test1",
@@ -69,58 +71,51 @@ public class AccountsServiceTest {
                 true
         );
         CreateAccountResponse expectedResponse = new CreateAccountResponse("Account created", request);
-        when(accountsService.createAccount(request)).thenReturn(expectedResponse);
         CreateAccountResponse actualResponse = accountsService.createAccount(request);
-        assertEquals(expectedResponse, actualResponse);
-    }
-
-    @Before
-    public void setupExceptionHandler() {
-        mockMvc = MockMvcBuilders.standaloneSetup(accountsController)
-                .setControllerAdvice(new AccountResponseEntityExceptionHandler())
-                .build();
+        assertEquals(expectedResponse.getStatus(), actualResponse.getStatus());
+        assertEquals(3, accountsRepository.findAll().size());
+        assertEquals("Test1", accountsRepository.findByName("Test1").get(0).getName());
+        accountsRepository.delete(accountsRepository.findByName("Test1").get(0));
     }
 
     @Test
-    @DisplayName("When no name is received, return false")
-    public void createAccount_Not_Created() {
+    @DisplayName("When no name is received")
+    public void createAccount_Failed_No_Name() {
         CreateAccountRequest request = new CreateAccountRequest(
                 "",
                 Currency.getInstance("EUR"),
                 BigDecimal.valueOf(1000),
                 true
         );
-        String status = "No name";
-        CreateAccountResponse expectedResponse = new CreateAccountResponse(status, request);
-
-        when(accountsService.createAccount(request))
-                .thenThrow(new CreateAccountException(status))
-                .thenReturn(expectedResponse);
-        exception.expect(CreateAccountException.class);
-        CreateAccountResponse actualResponse = accountsService.createAccount(request);
-        assertEquals(expectedResponse, actualResponse);
+        assertThrows(CreateAccountException.class,() -> accountsService.createAccount(request));
     }
 
-
-    @Before
-    public void createTestAccounts() {
-        Account fromTestAccount = new Account(
-                "fromTest",
-                Currency.getInstance("EUR"),
-                BigDecimal.valueOf(1000),
-                false
-        );
-        Account toTestAccount = new Account(
-                "toTest",
-                Currency.getInstance("EUR"),
-                BigDecimal.valueOf(1000),
-                false
-        );
-        accountsRepository.save(toTestAccount);
-        accountsRepository.save(fromTestAccount);
-    }
     @Test
-    @DisplayName("When valid moneyTransferRequest is received, return true")
+    @DisplayName("When no currency is received")
+    public void createAccount_Failed_No_currency() {
+        CreateAccountRequest request = new CreateAccountRequest(
+                "Test01",
+                null,
+                BigDecimal.valueOf(1000),
+                true
+        );
+        assertThrows(CreateAccountException.class,() -> accountsService.createAccount(request));
+    }
+
+    @Test
+    @DisplayName("When no balance is received")
+    public void createAccount_Failed_No_balance() {
+        CreateAccountRequest request = new CreateAccountRequest(
+                "Test01",
+                Currency.getInstance("EUR"),
+                null,
+                true
+        );
+        assertThrows(CreateAccountException.class,() -> accountsService.createAccount(request));
+    }
+
+    @Test
+    @DisplayName("When valid moneyTransferRequest is received")
     public void transferMoney_Accepted() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
@@ -130,9 +125,16 @@ public class AccountsServiceTest {
 
         TransferMoneyResponse expectedResponse = new TransferMoneyResponse("Transaction successful.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
         TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(expectedResponse.getStatus(), actualResponse.getStatus());
+        assertEquals(
+                BigDecimal.valueOf(900).toString(),
+                accountsRepository.findByName("fromTest").get(0).getBalance().getNumberStripped().toPlainString()
+        );
+        assertEquals(
+                BigDecimal.valueOf(1100).toString(),
+                accountsRepository.findByName("toTest").get(0).getBalance().getNumberStripped().toPlainString()
+        );
     }
     @Test
     @DisplayName("When wrong fromAccount is received")
@@ -142,188 +144,141 @@ public class AccountsServiceTest {
                 "toTest",
                 BigDecimal.valueOf(100)
         );
-
-        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("One of the accounts doesn't exist.", request);
-
-        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
-        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
-        assertEquals(expectedResponse, actualResponse);
+        assertThrows(TransferMoneyException.class, () -> accountsService.transferMoney(request));
     }
+
     @Test
-    @DisplayName("When wrong toAccount is recieved, return false")
+    @DisplayName("When wrong toAccount is received")
     public void transferMoney_WrongToAccount() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "",
                 BigDecimal.valueOf(100)
         );
-
-        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("One of the accounts doesn't exist.", request);
-
-        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
-        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
-        assertEquals(expectedResponse, actualResponse);
+        assertThrows(TransferMoneyException.class, () -> accountsService.transferMoney(request));
     }
+
     @Test
-    @DisplayName("When wrong Amount is recieved, return false")
+    @DisplayName("When wrong Amount is received")
     public void transferMoney_WrongAmount() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(-100)
         );
-
-        TransferMoneyResponse expectedResponse = new TransferMoneyResponse("Amount is a negative value.", request);
-
-        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
-        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
-        assertEquals(expectedResponse, actualResponse);
+        assertThrows(TransferMoneyException.class, () -> accountsService.transferMoney(request));
     }
+
     @Test
-    @DisplayName("When non treasury account try's to transfer too many funds, return false")
+    @DisplayName("When non treasury account try's to transfer too many funds")
     public void transferMoney_NonTreasuryNegative() throws TransferMoneyException {
         TransferMoneyRequest request = new TransferMoneyRequest(
                 "fromTest",
                 "toTest",
                 BigDecimal.valueOf(1100)
         );
-
-        TransferMoneyResponse expectedResponse =
-                new TransferMoneyResponse("Transaction is illegal for a given fromAccount.", request);
-
-        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
-        TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
-        assertEquals(expectedResponse, actualResponse);
+        assertThrows(TransferMoneyException.class, () -> accountsService.transferMoney(request));
     }
 
-    @Before
-    public void createTreasuryTestAccounts() {
-        Account fromTestAccount = new Account(
-                "fromTest",
-                Currency.getInstance("EUR"),
-                BigDecimal.valueOf(1000),
-                true
-        );
-        Account toTestAccount = new Account(
-                "toTest",
-                Currency.getInstance("EUR"),
-                BigDecimal.valueOf(1000),
-                true
-        );
-        accountsRepository.save(toTestAccount);
-        accountsRepository.save(fromTestAccount);
-    }
     @Test
-    @DisplayName("When non treasury account try's to transfer too many funds, return false")
+    @DisplayName("When non treasury account try's to transfer too many funds")
     public void transferMoney_TreasuryNegative() throws TransferMoneyException {
+        Account treasuryTest = new Account(
+                "treasuryTest",
+                Currency.getInstance("EUR"),
+                BigDecimal.valueOf(1000),
+                true
+        );
+        accountsRepository.save(treasuryTest);
         TransferMoneyRequest request = new TransferMoneyRequest(
-                "fromTest",
+                "treasuryTest",
                 "toTest",
                 BigDecimal.valueOf(1100)
         );
 
         TransferMoneyResponse expectedResponse =
-                new TransferMoneyResponse("Transaction is illegal for a given fromAccount.", request);
+                new TransferMoneyResponse("Transaction successful.", request);
 
-        when(accountsService.transferMoney(request)).thenReturn(expectedResponse);
         TransferMoneyResponse actualResponse = accountsService.transferMoney(request);
-        assertEquals(expectedResponse, actualResponse);
-    }
-
-    @Before
-    public void prepareAccountList() {
-        Account fromTestAccount = new Account(
-                "fromTest",
-                Currency.getInstance("EUR"),
-                BigDecimal.valueOf(1000),
-                false
+        assertEquals(expectedResponse.getStatus(), actualResponse.getStatus());
+        assertEquals(
+                BigDecimal.valueOf(-100).toString(),
+                accountsRepository.findByName("treasuryTest").get(0).getBalance().getNumberStripped().toPlainString()
         );
-        Account toTestAccount = new Account(
-                "toTest",
-                Currency.getInstance("EUR"),
-                BigDecimal.valueOf(1000),
-                false
-        );
-        accountList = Arrays.asList(fromTestAccount, toTestAccount);
+        accountsRepository.delete(treasuryTest);
     }
 
     @Test
     @DisplayName("When findAll received and database as fields, non empty list")
     public void findAll() throws AccountsListException {
-        List<Account> expectedResponse = accountList;
-        when(accountsService.getAllAccounts()).thenReturn(accountList);
-
         List<Account> actualResponse = accountsService.getAllAccounts();
-        assertEquals(expectedResponse, actualResponse);
+        for(int i = 0; i < actualResponse.size(); i++) {
+            assertEquals(accountList.get(i).getName(), actualResponse.get(i).getName());
+            assertEquals(accountList.get(i).getCurrency(), actualResponse.get(i).getCurrency());
+            assertEquals(accountList.get(i).getBalance(), actualResponse.get(i).getBalance());
+            assertEquals(accountList.get(i).getTreasury(), actualResponse.get(i).getTreasury());
+        }
     }
 
     @Test
     @DisplayName("When findAll recieved and database empty, return empty list")
-    public void findAll_NotFound() throws AccountsListException {
-        List<Account> expectedResponse = Lists.emptyList();
-        when(accountsService.getAllAccounts()).thenReturn(Lists.emptyList());
-
-        List<Account> actualResponse = accountsService.getAllAccounts();
-        assertEquals(expectedResponse, actualResponse);
+    public void findAll_NotFound() {
+        accountsRepository.delete(fromTestAccount);
+        accountsRepository.delete(toTestAccount);
+        assertThrows(AccountsListException.class, () -> accountsService.getAllAccounts());
     }
 
     @Test
     @DisplayName("When findByName found, return Non empty List")
     public void findByName_Found() throws AccountsListException {
         List<Account> expectedResponse = List.of(accountList.get(0));
-        when(accountsService.findAccountByName("fromTest")).thenReturn(expectedResponse);
 
         List<Account> actualResponse = accountsService.findAccountByName("fromTest");
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(accountList.get(0).getName(), actualResponse.get(0).getName());
+        assertEquals(accountList.get(0).getCurrency(), actualResponse.get(0).getCurrency());
+        assertEquals(accountList.get(0).getBalance(), actualResponse.get(0).getBalance());
+        assertEquals(accountList.get(0).getTreasury(), actualResponse.get(0).getTreasury());
     }
 
     @Test
     @DisplayName("When findByName not found, return empty List")
-    public void findByName_NotFound() throws AccountsListException {
-        List<Account> expectedResponse = Lists.emptyList();
-        when(accountsService.findAccountByName("TestX")).thenReturn(expectedResponse);
-
-        List<Account> actualResponse = accountsService.findAccountByName("TestX");
-        assertEquals(expectedResponse, actualResponse);
+    public void findByName_NotFound() {
+        assertThrows(AccountsListException.class,() -> accountsService.findAccountByName("TestX"));
     }
 
     @Test
     @DisplayName("When findByCurrency found, return Non empty List")
     public void findByCurrency_Found() throws AccountsListException {
-        List<Account> expectedResponse = accountList;
-        when(accountsService.findAccountByCurrency("EUR")).thenReturn(expectedResponse);
-
         List<Account> actualResponse = accountsService.findAccountByCurrency("EUR");
-        assertEquals(expectedResponse, actualResponse);
+        for(int i = 0; i < actualResponse.size(); i++) {
+            assertEquals(accountList.get(i).getName(), actualResponse.get(i).getName());
+            assertEquals(accountList.get(i).getCurrency(), actualResponse.get(i).getCurrency());
+            assertEquals(accountList.get(i).getBalance(), actualResponse.get(i).getBalance());
+            assertEquals(accountList.get(i).getTreasury(), actualResponse.get(i).getTreasury());
+        }
     }
 
     @Test
-    @DisplayName("When findByCurrency found, return empty List")
-    public void findByCurrency_NotFound() throws AccountsListException {
-        List<Account> expectedResponse = Lists.emptyList();
-        when(accountsService.findAccountByCurrency("USD")).thenReturn(expectedResponse);
-
-        List<Account> actualResponse = accountsService.findAccountByCurrency("USD");
-        assertEquals(expectedResponse, actualResponse);
+    @DisplayName("When findByCurrency found")
+    public void findByCurrency_NotFound() {
+       assertThrows(AccountsListException.class, () -> accountsService.findAccountByCurrency("USD"));
     }
 
     @Test
-    @DisplayName("When findByCurrency found, return Non empty List")
+    @DisplayName("When findByTreasury found, return Non empty List")
     public void findByTreasury_Found() throws AccountsListException {
-        List<Account> expectedResponse = accountList;
-        when(accountsService.findAccountByTreasury("true")).thenReturn(expectedResponse);
-
-        List<Account> actualResponse = accountsService.findAccountByTreasury("true");
-        assertEquals(expectedResponse, actualResponse);
+        List<Account> actualResponse = accountsService.findAccountByTreasury("false");
+        for(int i = 0; i < actualResponse.size(); i++) {
+            assertEquals(accountList.get(i).getName(), actualResponse.get(i).getName());
+            assertEquals(accountList.get(i).getCurrency(), actualResponse.get(i).getCurrency());
+            assertEquals(accountList.get(i).getBalance(), actualResponse.get(i).getBalance());
+            assertEquals(accountList.get(i).getTreasury(), actualResponse.get(i).getTreasury());
+        }
     }
 
     @Test
-    @DisplayName("When findByCurrency found, return empty List")
-    public void findByTreasury_NotFound() throws AccountsListException {
-        List<Account> expectedResponse = Lists.emptyList();
-        when(accountsService.findAccountByTreasury("false")).thenReturn(expectedResponse);
-
-        List<Account> actualResponse = accountsService.findAccountByTreasury("false");
-        assertEquals(expectedResponse, actualResponse);
+    @DisplayName("When findByTreasury not found")
+    public void findByTreasury_NotFound() {
+        assertThrows(AccountsListException.class, () -> accountsService.findAccountByTreasury("true"));
     }
 }
